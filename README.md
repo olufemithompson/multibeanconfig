@@ -51,7 +51,7 @@ multiple:
       client-id: '123456'
       client-secret: 'abcde'
 ```
-### Explanation of the Configuration
+##### Explanation of the Configuration
 - **Default Configuration**: The config section at the top defines default values that can be used by any bean if specific values are missing in the bean's own configuration.
 - **Bean-Specific Configurations**: Each bean under multiple has its own config section where you can define unique settings.
 - **Automatic Value Inheritance**: If a property is not found in a bean's configuration, it will automatically pull from the default configuration defined earlier.
