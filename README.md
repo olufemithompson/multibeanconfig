@@ -51,7 +51,7 @@ multiple:
       client-id: '123456'
       client-secret: 'abcde'
 ```
-###Explanation of the Configuration
+### Explanation of the Configuration
 - **Default Configuration**: The config section at the top defines default values that can be used by any bean if specific values are missing in the bean's own configuration.
 - **Bean-Specific Configurations**: Each bean under multiple has its own config section where you can define unique settings.
 - **Automatic Value Inheritance**: If a property is not found in a bean's configuration, it will automatically pull from the default configuration defined earlier.
@@ -148,15 +148,14 @@ public class YourService {
 }
 ```
 ### Explanation of the Code
-In this section, you learned how to utilize the `@MultipleBean` annotation to manage your beans efficiently within your Spring application.
+In this section, we’ve demonstrated how to leverage the `@MultipleBean` annotation from MultiBeanConfig to create and manage multiple, individually configured instances of the same class within your Spring application. 
+The library provides several ways to inject configuration values into these beans:
 
 - **Constructor Injection**: This method ensures that the configuration is provided when the bean is created.
 
 - **Autowiring**: This approach allows Spring to automatically inject the dependencies into your class, making it easier to manage but less explicit compared to constructor injection.
 
 - **@Value Injection**: Using `@Value`, you can directly assign configuration values to class fields.
-
-- **HttpConfig Class**: This class centralizes your configuration properties and maps them from the application.yml file, allowing for cleaner and more organized code.
 
 ## Contributing
 Contributions are welcome! If you have suggestions or improvements, feel free to submit a pull request.
