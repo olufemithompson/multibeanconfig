@@ -1,9 +1,9 @@
 package com.olufemithompson;
 
-import com.olufemithompson.multiplebean.ComponentOne;
-import com.olufemithompson.multiplebean.Service;
+import com.olufemithompson.app.AppConfig;
+import com.olufemithompson.app.ComponentOne;
+import com.olufemithompson.app.ComponentTwo;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 
@@ -11,14 +11,12 @@ import org.springframework.context.ApplicationContext;
 public class Main {
     public static void main(final String[] args) {
         ApplicationContext context = SpringApplication.run(Main.class, args);
-//        String[] names = context.getBeanDefinitionNames();
-//        for(int i = 0; i < names.length; i++){
-//            System.out.println(names[i]);
-//        }
-//        Service service = context.getBean(Service.class);
-//        service.doStuff();
-        ComponentOne componentOne = context.getBean(ComponentOne.class);
-        componentOne.go();
+        String[] names = context.getBeanDefinitionNames();
+        ComponentTwo component2 = context.getBean(ComponentTwo.class);
+        component2.go();
+
+        ComponentOne component1= context.getBean(ComponentOne.class);
+        component1.go();
         System.exit(0);
     }
 

@@ -1,4 +1,4 @@
-package com.olufemithompson.multiplebean;
+package com.olufemithompson.app;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,15 +7,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ComponentOne {
-
     @Autowired
-    private AppConfig appConfig;
-
-    @Value("${app.name}")
-    private String me;
+    private  Service beana;
 
     public void go(){
-        System.out.println("ComponentOne initialized with me = " + me);
+        System.out.println("component 1");
+        beana.doStuff();
     }
 
 }

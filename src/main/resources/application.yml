@@ -1,13 +1,17 @@
 app:
-  name: 'best'
+  name: 'best of luck'
   nice: 1
+  books:
+    - 'thanks'
 
 multiple:
     beana:
-      name: Service
-      config:
-        app:
-          name: 'ay'
-          nice: 2
+      class: Service
+      app:
+        nice: 2
+        books:
+          - 'good'
+          - 'bad'
+
     beanb:
-      name: Service
+      class: Service
