@@ -22,7 +22,7 @@ Add the following dependency to your pom.xml:
 ```
 
 ### Usage
-#### Step 1: Define your beans and their configurations in your application.yml:
+### Step 1: Define your beans and their configurations in your application.yml:
 In your application.yml, you can define your beans and their configurations. 
 The example below demonstrates how to define two beans of the same class, `HttpClientService`, named `defaultClient` and `failOverClient`. 
 Each bean has its own separate configuration.
@@ -51,14 +51,14 @@ multiple:
       client-id: '123456'
       client-secret: 'abcde'
 ```
-##### Explanation of the Configuration
+#### Explanation of the Configuration
 - **Default Configuration**: The config section at the top defines default values that can be used by any bean if specific values are missing in the bean's own configuration.
 - **Bean-Specific Configurations**: Each bean under multiple has its own config section where you can define unique settings.
 - **Automatic Value Inheritance**: If a property is not found in a bean's configuration, it will automatically pull from the default configuration defined earlier.
 - **Mandatory Class Property**:  Each bean definition must include a class property specifying the actual class for which multiple bean instances should be configured.
 
 
-#### Step 2: Define Required beans in a config class
+### Step 2: Define Required beans in a config class
 To enable MultiBeanConfig functionality, you need to define the following beans in a configuration class:
 
 - `BeanDefinitionRegistryPostProcessor`: Registers your beans dynamically based on the configuration in application.yml.
@@ -87,10 +87,10 @@ public class MultipleBeanConfig {
 This setup ensures that `MultiBeanConfig` properly registers and configures your beans based on the application’s configuration file. Each bean here plays a crucial role in handling dynamic bean registration, property binding, and dependency injection for all your custom-configured beans.
 
 
-#### Step 3: Use the @MultipleBean Annotation
+### Step 3: Use the @MultipleBean Annotation
 Annotate your service class with `@MultipleBean` to indicate that it should be configured using the MultiBeanConfig library. Here’s an example of how to use the `@MultipleBean` annotation with the `HttpClientService` defined in the previous `application.yml`.
 
-##### A: Inject Configuration via Constructor
+#### A: Inject Configuration via Constructor
 In this approach, the `HttpClientService` class receives its configuration through the constructor.
 
 ```java
@@ -105,7 +105,7 @@ public class HttpClientService {
 }
 ```
 
-##### B: Inject Configuration via Autowiring
+#### B: Inject Configuration via Autowiring
 Alternatively, you can use Spring's `@Autowired` annotation to inject the configuration directly into the class.
 ```java
 @MultipleBean
@@ -131,7 +131,7 @@ public class HttpConfig {
 }
 ```
 
-##### C: Inject Configuration Properties with @Value
+#### C: Inject Configuration Properties with @Value
 You can also inject specific configuration properties directly into your class fields using the `@Value` annotation.
 ```java
 @MultipleBean
@@ -150,7 +150,7 @@ public class HttpClientService {
 ```
 
 
-#### Step 4: Define a service that requires your multiple bean.
+### Step 4: Define a service that requires your multiple bean.
 You can define a service that requires multiple beans of the same class. Use constructor injection to obtain the beans:
 ```java
 @Service
@@ -178,7 +178,7 @@ public class YourService {
     private HttpClientService failOverClient;
 }
 ```
-### Summary
+## Summary
 In this section, we’ve demonstrated how to leverage the `@MultipleBean` annotation from MultiBeanConfig to create and manage multiple, individually configured instances of the same class within your Spring application. 
 The library provides several ways to inject configuration values into these beans:
 
