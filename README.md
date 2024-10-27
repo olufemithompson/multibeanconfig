@@ -57,7 +57,37 @@ multiple:
 - **Automatic Value Inheritance**: If a property is not found in a bean's configuration, it will automatically pull from the default configuration defined earlier.
 - **Mandatory Class Property**:  Each bean definition must include a class property specifying the actual class for which multiple bean instances should be configured.
 
-#### Step 2: Use the @MultipleBean Annotation
+
+#### Step 2: Define Required beans in a config class
+To enable MultiBeanConfig functionality, you need to define the following beans in a configuration class:
+
+- `BeanDefinitionRegistryPostProcessor`: Registers your beans dynamically based on the configuration in application.yml.
+- `BeanPostProcessor`: Handles property injection and ensures each bean’s dependencies are correctly configured.
+- `ConfigurationPropertiesBindingPostProcessor`: Binds complex configuration properties to your beans, ensuring that all @ConfigurationProperties annotations work as expected.
+
+Here’s how you can set up these beans in a `MultipleBeanConfig` class:
+```java
+@Configuration
+public class MultipleBeanConfig {
+    @Bean
+    public BeanDefinitionRegistryPostProcessor multipleBeanDefinitionPostProcessor() {
+        return new MultipleBeanDefinitionPostProcessor();
+    }
+
+    @Bean
+    public BeanPostProcessor beanPropertyPostProcessor() {
+        return new BeanPropertyPostProcessor();
+    }
+    @Bean
+    public ConfigurationPropertiesBindingPostProcessor configurationPropertyPostProcessor() {
+        return new ConfigurationPropertyPostProcessor();
+    }
+}
+```
+This setup ensures that `MultiBeanConfig` properly registers and configures your beans based on the application’s configuration file. Each bean here plays a crucial role in handling dynamic bean registration, property binding, and dependency injection for all your custom-configured beans.
+
+
+#### Step 3: Use the @MultipleBean Annotation
 Annotate your service class with `@MultipleBean` to indicate that it should be configured using the MultiBeanConfig library. Here’s an example of how to use the `@MultipleBean` annotation with the `HttpClientService` defined in the previous `application.yml`.
 
 ##### A: Inject Configuration via Constructor
@@ -86,9 +116,10 @@ public class HttpClientService {
     
 }
 ```
-This is assuming you have defined an `HttpConfig` class annotated with `@ConfigurationProperties`:
+This is assuming you have defined an `HttpConfig` class annotated with `@ConfigurationProperties` and `@Configuration`:
 ```java
 @ConfigurationProperties("config")
+@Configuration
 @Getter
 @Setter
 public class HttpConfig {
@@ -119,7 +150,7 @@ public class HttpClientService {
 ```
 
 
-#### Step 3: Define a service that requires your multiple bean.
+#### Step 4: Define a service that requires your multiple bean.
 You can define a service that requires multiple beans of the same class. Use constructor injection to obtain the beans:
 ```java
 @Service
