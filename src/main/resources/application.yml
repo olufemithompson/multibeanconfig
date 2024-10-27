@@ -1,0 +1,13 @@
+app:
+  name: 'best'
+  nice: 1
+
+multiple:
+    beana:
+      name: Service
+      config:
+        app:
+          name: 'ay'
+          nice: 2
+    beanb:
+      name: Service
