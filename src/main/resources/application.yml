@@ -1,17 +1,22 @@
-app:
-  name: 'best of luck'
-  nice: 1
-  books:
-    - 'thanks'
+config:
+  client-id: '123456'
+  client-secret: 'abcde'
+  scopes:
+    - 'read'
+    - 'write'
 
 multiple:
-    beana:
-      class: Service
-      app:
-        nice: 2
-        books:
-          - 'good'
-          - 'bad'
+  fail-over-client:
+    class: HttpClientService
+    config:
+      client-secret: 'abcde'
 
-    beanb:
-      class: Service
+  default-client:
+    class: HttpClientService
+    config:
+      client-id: 'gggg'
+      client-secret: 'abcde'
+      scopes:
+        - 'read'
+        - 'write'
+        - 'delete'

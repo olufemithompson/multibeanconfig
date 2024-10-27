@@ -2,17 +2,19 @@ package com.olufemithompson.app;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ComponentOne {
     @Autowired
-    private  Service beana;
+    private HttpClientService defaultClient;
+
+    @Autowired
+    private HttpClientService failOverClient;
 
     public void go(){
-        System.out.println("component 1");
-        beana.doStuff();
+        defaultClient.doStuff();
+        failOverClient.doStuff();
     }
 
 }

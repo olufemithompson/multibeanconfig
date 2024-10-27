@@ -4,10 +4,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.olufemithompson</groupId>
-    <artifactId>springbeanregistry</artifactId>
+    <artifactId>multibeanconfig</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
-    <name>SpringBeanRegistry</name>
+    <name>Multi Bean Config</name>
     <description>This library allows Spring applications to categorize and map beans for straightforward retrieval based on service requirements, with added capabilities for manual registration of beans not managed by the Spring container</description>
 
     <properties>

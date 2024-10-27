@@ -1,4 +1,4 @@
-package com.olufemithompson.multiplebean;
+package com.olufemithompson.multibeanconfig;
 
 import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
@@ -10,7 +10,6 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.bind.BindResult;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.origin.OriginTrackedValue;
@@ -21,25 +20,26 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
-import org.springframework.validation.BindingResult;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
-import static com.olufemithompson.multiplebean.Constants.PARENT_CONFIG_NAME;
-import static com.olufemithompson.multiplebean.Utils.extractDataFromMap;
-import static com.olufemithompson.multiplebean.Utils.formatConfigProperties;
-import static com.olufemithompson.multiplebean.Utils.generateNestedMap;
-import static com.olufemithompson.multiplebean.Utils.getFirstKey;
+import static com.olufemithompson.multibeanconfig.Constants.PARENT_CONFIG_NAME;
+import static com.olufemithompson.multibeanconfig.Utils.extractDataFromMap;
+import static com.olufemithompson.multibeanconfig.Utils.flatten;
+import static com.olufemithompson.multibeanconfig.Utils.formatConfigProperties;
+import static com.olufemithompson.multibeanconfig.Utils.generateNestedMap;
+import static com.olufemithompson.multibeanconfig.Utils.getFirstKey;
+import static com.olufemithompson.multibeanconfig.Utils.kebabToCamelCase;
+import static com.olufemithompson.multibeanconfig.Utils.mergeMissingKeys;
 
 @Configuration
 public class MultipleBeanDefinitionPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware{
-    private Map<String, Object> multipleBeanProperties = new HashMap<>();
+    private Map<String, Object> applicationProperties = new HashMap<>();
     Map<String, Object> flattenedProperties = new HashMap<>();
 
     private  ConfigurableEnvironment environment;
@@ -53,6 +53,7 @@ public class MultipleBeanDefinitionPostProcessor implements BeanDefinitionRegist
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
 
         parseProperties();
+        Map<String, Object> multipleBeanProperties = extractDataFromMap(PARENT_CONFIG_NAME, applicationProperties);
         Set<String> beanNames  = multipleBeanProperties.keySet();
 
 
@@ -61,18 +62,19 @@ public class MultipleBeanDefinitionPostProcessor implements BeanDefinitionRegist
 
         Set<Class<?>> multipleBeans = reflections.getTypesAnnotatedWith(MultipleBean.class);
 
+        for(String beanName: beanNames){
+            Map<String, Object> beanConfig = extractDataFromMap(beanName, multipleBeanProperties);
 
-        for (Class<?> multipleBeanClass : multipleBeans) {
-
-            for(String beanName: beanNames){
-                Map<String, Object> beanConfig = extractDataFromMap(beanName, multipleBeanProperties);
+            if(!beanConfig.containsKey("class")){
+                throw new RuntimeException(String.format("Declared bean : %s should have a class property", beanName));
+            }
+            String configuredBeanClassName = beanConfig.get("class").toString();
+            boolean foundClass = false;
+            for (Class<?> multipleBeanClass : multipleBeans) {
                 String beanClassName = multipleBeanClass.getSimpleName();
-                if(!beanConfig.containsKey("class")){
-                    throw new RuntimeException(String.format("Declared bean : %s should have a class property", beanName));
-                }
-
-                String configuredBeanClassName = beanConfig.get("class").toString();
                 if(configuredBeanClassName.equals(beanClassName)){
+                    foundClass = true;
+
                     Map<String, String> configDependencies = registerConfigDependencies(
                             beanName,
                             multipleBeanClass,
@@ -90,6 +92,9 @@ public class MultipleBeanDefinitionPostProcessor implements BeanDefinitionRegist
                             configDependencies
                             );
 
+                }
+                if(!foundClass){
+                    throw new RuntimeException(String.format("Cannot find Class %s for declared bean %s",configuredBeanClassName, beanName));
                 }
             }
         }
@@ -109,18 +114,29 @@ public class MultipleBeanDefinitionPostProcessor implements BeanDefinitionRegist
             if (annotation != null) {
                 String originalPrefix = annotation.value();
                 String key = getFirstKey(originalPrefix);
+                Map<String, Object> defaultConfig = extractDataFromMap(key, applicationProperties);
                 if(beanConfig.containsKey(key)){
-                    String customPrefix = PARENT_CONFIG_NAME+"."+beanName+"."+originalPrefix;
 
+                    Map<String, Object> beanAppConfig = extractDataFromMap(key, beanConfig);
+                    mergeMissingKeys(defaultConfig, beanAppConfig);
+                    beanConfig.put(key, beanAppConfig);
+
+                    Map<String, Object> propertySourceMap  = flatten(Map.of(beanName, beanConfig),"multiple");
+                    MapPropertySource propertySource = new MapPropertySource("custom", propertySourceMap);
+                    environment.getPropertySources().addFirst(propertySource);
+
+                    String customPrefix = PARENT_CONFIG_NAME+"."+beanName+"."+originalPrefix;
                     Object customConfigInstance = Binder.get(environment)
                             .bind(customPrefix, Bindable.of(configClass))
                             .orElseThrow(() -> new RuntimeException("Unable to bind properties for custom config"));
 
-                    String customBeanName = beanName + configClass.getSimpleName();
+                    String formattedBeanName = kebabToCamelCase(beanName);
+
+                    String customBeanName = formattedBeanName + configClass.getSimpleName();
                     registerBeanDefinition(registry, configClass, customBeanName, Map.of());
 
                     MultipleBeanConfigRegistry.registerConfig(customBeanName, customConfigInstance);
-                    MultipleBeanConfigRegistry.registerBeanConfigReference(beanName+field.getName(), customBeanName);
+                    MultipleBeanConfigRegistry.registerBeanConfigReference(formattedBeanName+field.getName(), customBeanName);
                     customConfigBeans.put(configClass.getSimpleName(), customBeanName);
                 }
             }
@@ -128,14 +144,10 @@ public class MultipleBeanDefinitionPostProcessor implements BeanDefinitionRegist
         return customConfigBeans;
     }
 
-    private <T> BindResult<T> bindConfig(String prefix, Class<T> configClass) {
-        return Binder.get(environment)
-                .bind(prefix, Bindable.of(configClass));
-    }
-
     private void registerValueAnnotatedFieldDependencies(
             String beanName,
             Class<?> multipleBeanClass){
+        String formattedBeanName = kebabToCamelCase(beanName);
         for (Field field : multipleBeanClass.getDeclaredFields()) {
             if (field.isAnnotationPresent(Value.class)) {
                 field.setAccessible(true);
@@ -143,7 +155,7 @@ public class MultipleBeanDefinitionPostProcessor implements BeanDefinitionRegist
                 String multipleBeanPropertyKey = PARENT_CONFIG_NAME+"."+beanName+"."+propertyKey;
                 if(flattenedProperties.containsKey(multipleBeanPropertyKey)){
                     MultipleBeanConfigRegistry.registerValue(
-                            beanName+field.getName(),
+                            formattedBeanName+field.getName(),
                             flattenedProperties.get(multipleBeanPropertyKey)
                     );
                 }
@@ -192,7 +204,7 @@ public class MultipleBeanDefinitionPostProcessor implements BeanDefinitionRegist
                 }
             }
         }
-        registry.registerBeanDefinition(beanName, builder.getBeanDefinition());
+        registry.registerBeanDefinition(kebabToCamelCase(beanName), builder.getBeanDefinition());
     }
 
 
@@ -203,14 +215,15 @@ public class MultipleBeanDefinitionPostProcessor implements BeanDefinitionRegist
                 Map<String, Object> properties = ((MapPropertySource) propertySource).getSource();
 
                 properties.forEach((key, value) ->  {
-                    if(key.startsWith(PARENT_CONFIG_NAME)){
-                        flattenedProperties.put(key, value);
-                    }
+                    flattenedProperties.put(key, value);
                 });
             }
         }
-        Map<String, Object> nestedMap = generateNestedMap(flattenedProperties);
-        multipleBeanProperties = extractDataFromMap(PARENT_CONFIG_NAME, nestedMap);
+        applicationProperties = generateNestedMap(flattenedProperties);
+
+        System.out.println(flattenedProperties);
+        System.out.println(applicationProperties);
     }
+
 }
 
