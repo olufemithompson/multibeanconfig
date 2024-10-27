@@ -24,7 +24,7 @@ Add the following dependency to your pom.xml:
 ### Usage
 #### Step 1: Define your beans and their configurations in your application.yml:
 In your application.yml, you can define your beans and their configurations. 
-The example below demonstrates how to define two beans of the same class, *HttpClientService*, named *defaultClient* and failOverClient*. 
+The example below demonstrates how to define two beans of the same class, `HttpClientService`, named `defaultClient` and `failOverClient`. 
 Each bean has its own separate configuration.
 ```yaml
 config:
@@ -55,6 +55,7 @@ multiple:
 - **Default Configuration**: The config section at the top defines default values that can be used by any bean if specific values are missing in the bean's own configuration.
 - **Bean-Specific Configurations**: Each bean under multiple has its own config section where you can define unique settings.
 - **Automatic Value Inheritance**: If a property is not found in a bean's configuration, it will automatically pull from the default configuration defined earlier.
+- **Mandatory Class Property**:  Each bean definition must include a class property specifying the actual class for which multiple bean instances should be configured.
 
 #### Step 2: Use the @MultipleBean Annotation
 Annotate your service class with `@MultipleBean` to indicate that it should be configured using the MultiBeanConfig library. Here’s an example of how to use the `@MultipleBean` annotation with the `HttpClientService` defined in the previous `application.yml`.
@@ -75,7 +76,7 @@ public class HttpClientService {
 ```
 
 ##### B: Inject Configuration via Autowiring
-Alternatively, you can use Spring's @Autowired annotation to inject the configuration directly into the class.
+Alternatively, you can use Spring's `@Autowired` annotation to inject the configuration directly into the class.
 ```java
 @MultipleBean
 public class HttpClientService {
@@ -85,7 +86,7 @@ public class HttpClientService {
     
 }
 ```
-This is assuming you have defined an *HttpConfig* class annotated with *@ConfigurationProperties*:
+This is assuming you have defined an `HttpConfig` class annotated with `@ConfigurationProperties`:
 ```java
 @ConfigurationProperties("config")
 @Getter
@@ -100,7 +101,7 @@ public class HttpConfig {
 ```
 
 ##### C: Inject Configuration Properties with @Value
-You can also inject specific configuration properties directly into your class fields using the @Value annotation.
+You can also inject specific configuration properties directly into your class fields using the `@Value` annotation.
 ```java
 @MultipleBean
 public class HttpClientService {
@@ -134,7 +135,7 @@ public class ConfiguredService {
     }
 }
 ```
-Or, you can use the *@Autowired* annotation for field injection:
+Or, you can use the `@Autowired` annotation for field injection:
 ```java
 @Service
 public class YourService {
@@ -147,13 +148,13 @@ public class YourService {
 }
 ```
 ### Explanation of the Code
-In this section, you learned how to utilize the @MultipleBean annotation to manage your beans efficiently within your Spring application:
+In this section, you learned how to utilize the `@MultipleBean` annotation to manage your beans efficiently within your Spring application.
 
 - **Constructor Injection**: This method ensures that the configuration is provided when the bean is created.
 
 - **Autowiring**: This approach allows Spring to automatically inject the dependencies into your class, making it easier to manage but less explicit compared to constructor injection.
 
-- **@Value Injection**: Using @Value, you can directly assign configuration values to class fields.
+- **@Value Injection**: Using `@Value`, you can directly assign configuration values to class fields.
 
 - **HttpConfig Class**: This class centralizes your configuration properties and maps them from the application.yml file, allowing for cleaner and more organized code.
 
