@@ -147,7 +147,7 @@ public class YourService {
     private HttpClientService failOverClient;
 }
 ```
-### Explanation of the Code
+### Summary
 In this section, we’ve demonstrated how to leverage the `@MultipleBean` annotation from MultiBeanConfig to create and manage multiple, individually configured instances of the same class within your Spring application. 
 The library provides several ways to inject configuration values into these beans:
 
