@@ -1,4 +1,4 @@
-package com.olufemithompson.multibeanconfig;
+package io.github.olufemithompson.multibeanconfig;
 
 import org.springframework.beans.BeansException;
 import org.springframework.boot.context.properties.ConfigurationPropertiesBindingPostProcessor;

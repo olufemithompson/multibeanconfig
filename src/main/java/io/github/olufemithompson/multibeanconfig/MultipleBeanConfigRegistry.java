@@ -1,4 +1,4 @@
-package com.olufemithompson.multibeanconfig;
+package io.github.olufemithompson.multibeanconfig;
 
 import java.util.HashMap;
 import java.util.Map;

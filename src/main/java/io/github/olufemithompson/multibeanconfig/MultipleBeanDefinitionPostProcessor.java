@@ -1,4 +1,4 @@
-package com.olufemithompson.multibeanconfig;
+package io.github.olufemithompson.multibeanconfig;
 
 import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
@@ -28,14 +28,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static com.olufemithompson.multibeanconfig.Constants.PARENT_CONFIG_NAME;
-import static com.olufemithompson.multibeanconfig.Utils.extractDataFromMap;
-import static com.olufemithompson.multibeanconfig.Utils.flatten;
-import static com.olufemithompson.multibeanconfig.Utils.formatConfigProperties;
-import static com.olufemithompson.multibeanconfig.Utils.generateNestedMap;
-import static com.olufemithompson.multibeanconfig.Utils.getFirstKey;
-import static com.olufemithompson.multibeanconfig.Utils.kebabToCamelCase;
-import static com.olufemithompson.multibeanconfig.Utils.mergeMissingKeys;
+import static io.github.olufemithompson.multibeanconfig.Constants.PARENT_CONFIG_NAME;
+import static io.github.olufemithompson.multibeanconfig.Utils.extractDataFromMap;
+import static io.github.olufemithompson.multibeanconfig.Utils.flatten;
+import static io.github.olufemithompson.multibeanconfig.Utils.formatConfigProperties;
+import static io.github.olufemithompson.multibeanconfig.Utils.generateNestedMap;
+import static io.github.olufemithompson.multibeanconfig.Utils.getFirstKey;
+import static io.github.olufemithompson.multibeanconfig.Utils.kebabToCamelCase;
+import static io.github.olufemithompson.multibeanconfig.Utils.mergeMissingKeys;
 
 @Configuration
 public class MultipleBeanDefinitionPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware{

@@ -1,4 +1,4 @@
-package com.olufemithompson.multibeanconfig;
+package io.github.olufemithompson.multibeanconfig;
 
 import org.springframework.boot.origin.OriginTrackedValue;
 
