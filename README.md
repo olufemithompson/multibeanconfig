@@ -15,9 +15,9 @@ With this library, you can easily configure each bean separately using propertie
 Add the following dependency to your pom.xml:
 ```xml
 <dependency>
-    <groupId>com.olufemithompson</groupId>
+    <groupId>io.github.olufemithompson</groupId>
     <artifactId>multibeanconfig</artifactId>
-    <version>1.0.0</version>
+    <version>0.0.1</version>
 </dependency>
 ```
 
