@@ -5,7 +5,7 @@
 
     <groupId>io.github.olufemithompson</groupId>
     <artifactId>multibeanconfig</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <packaging>jar</packaging>
     <name>Multi Bean Config</name>
     <description>This library allows Spring applications to categorize and map beans for straightforward retrieval based on service requirements, with added capabilities for manual registration of beans not managed by the Spring container</description>
@@ -47,13 +47,6 @@
             <artifactId>reflections</artifactId>
             <version>0.10.2</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.palantir.javapoet</groupId>
-            <artifactId>javapoet</artifactId>
-            <version>0.5.0</version>
-        </dependency>
-
     </dependencies>
     <profiles>
         <profile>
