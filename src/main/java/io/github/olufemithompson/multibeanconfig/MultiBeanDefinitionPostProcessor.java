@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static io.github.olufemithompson.multibeanconfig.Constants.CLASS_CONFIG_PARAM;
+import static io.github.olufemithompson.multibeanconfig.Constants.CUSTOM_CONFIG_PROPERTY_SOURCE;
 import static io.github.olufemithompson.multibeanconfig.Constants.PARENT_CONFIG_NAME;
 import static io.github.olufemithompson.multibeanconfig.Utils.extractDataFromMap;
 import static io.github.olufemithompson.multibeanconfig.Utils.flatten;
@@ -37,9 +39,43 @@ import static io.github.olufemithompson.multibeanconfig.Utils.getFirstKey;
 import static io.github.olufemithompson.multibeanconfig.Utils.kebabToCamelCase;
 import static io.github.olufemithompson.multibeanconfig.Utils.mergeMissingKeys;
 
+/**
+ * A {@link BeanDefinitionRegistryPostProcessor} that enables the registration of multiple beans
+ * of the same type with distinct configurations in a Spring application context.
+ * <br>
+ * <br>
+ * This class provides a flexible approach to managing multiple instances of the same
+ * bean type by allowing unique configurations for each bean instance. It leverages
+ * reflection to locate classes annotated with the custom {@link MultiBean} annotation and
+ * processes configuration dependencies marked by {@link ConfigurationProperties} and {@link Value}
+ * annotations. This allows each bean to be configured with its own specific settings
+ * based on property values specified in the application properties.
+ *
+ * <br>
+ * <br>
+ *
+ * Key features include:
+ * <ul>
+ *  <li>
+ *      Parsing application properties to set up distinct configurations for each bean.
+ *  </li>
+ *  <li>
+ *      Registering dependencies for fields annotated with {@link ConfigurationProperties} and {@link Value}
+ *      within each bean class.
+ *  </li>
+ *  <li>
+ *      Ensuring that each configuration dependency is bound to the corresponding properties.
+ *  </li>
+ * </ul>
+ *
+ * Ideal for scenarios requiring simultaneous use of multiple beans with different configurations,
+ * such as managing separate database connections or APIs within the same application.
+ *
+ */
 @Configuration
-public class MultipleBeanDefinitionPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware{
+class MultiBeanDefinitionPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware{
     private Map<String, Object> applicationProperties = new HashMap<>();
+
     Map<String, Object> flattenedProperties = new HashMap<>();
 
     private  ConfigurableEnvironment environment;
@@ -53,54 +89,65 @@ public class MultipleBeanDefinitionPostProcessor implements BeanDefinitionRegist
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
 
         parseProperties();
-        Map<String, Object> multipleBeanProperties = extractDataFromMap(PARENT_CONFIG_NAME, applicationProperties);
-        Set<String> beanNames  = multipleBeanProperties.keySet();
+
 
 
         Reflections reflections = new Reflections( new ConfigurationBuilder()
                 .setUrls(ClasspathHelper.forJavaClassPath()));
 
-        Set<Class<?>> multipleBeans = reflections.getTypesAnnotatedWith(MultipleBean.class);
+        Set<Class<?>> multipleBeans = reflections.getTypesAnnotatedWith(MultiBean.class);
+        if(multipleBeans.size() > 0){
+            Map<String, Object>  multipleBeanProperties = extractDataFromMap(
+                    "no 'multibean' section defined in your application properties",
+                    PARENT_CONFIG_NAME,
+                    applicationProperties);
+            Set<String> beanNames  = multipleBeanProperties.keySet();
 
-        for(String beanName: beanNames){
-            Map<String, Object> beanConfig = extractDataFromMap(beanName, multipleBeanProperties);
+            for(String beanName: beanNames){
+                Map<String, Object> beanConfig = extractDataFromMap(
+                        null,
+                        beanName,
+                        multipleBeanProperties
+                );
 
-            if(!beanConfig.containsKey("class")){
-                throw new RuntimeException(String.format("Declared bean : %s should have a class property", beanName));
-            }
-            String configuredBeanClassName = beanConfig.get("class").toString();
-            boolean foundClass = false;
-            for (Class<?> multipleBeanClass : multipleBeans) {
-                String beanClassName = multipleBeanClass.getSimpleName();
-                if(configuredBeanClassName.equals(beanClassName)){
-                    foundClass = true;
-
-                    Map<String, String> configDependencies = registerConfigDependencies(
-                            beanName,
-                            multipleBeanClass,
-                            beanConfig,
-                            registry
-                    );
-
-                    registerValueAnnotatedFieldDependencies(beanName, multipleBeanClass);
-
-                    // Register the main bean
-                    registerBeanDefinition(
-                            registry,
-                            multipleBeanClass,
-                            beanName,
-                            configDependencies
-                            );
-
+                if(!beanConfig.containsKey(CLASS_CONFIG_PARAM)){
+                    throw new RuntimeException(String.format("Declared bean : %s should have a %s property", CLASS_CONFIG_PARAM, beanName));
                 }
-                if(!foundClass){
-                    throw new RuntimeException(String.format("Cannot find Class %s for declared bean %s",configuredBeanClassName, beanName));
+                String configuredBeanClassName = beanConfig.get(CLASS_CONFIG_PARAM).toString();
+                boolean foundClass = false;
+                for (Class<?> multipleBeanClass : multipleBeans) {
+                    String beanClassName = multipleBeanClass.getSimpleName();
+                    if(configuredBeanClassName.equals(beanClassName)){
+                        foundClass = true;
+
+                        // Get dependencies annotated with @ConfigurationProperties
+                        Map<String, String> configDependencies = registerConfigDependencies(
+                                beanName,
+                                multipleBeanClass,
+                                beanConfig,
+                                registry
+                        );
+
+                        //Register properties annotation with @Value
+                        registerValueAnnotatedFieldDependencies(beanName, multipleBeanClass);
+
+                        // Register the main bean
+                        registerBeanDefinition(
+                                registry,
+                                multipleBeanClass,
+                                beanName,
+                                configDependencies
+                        );
+
+                    }
+                    if(!foundClass){
+                        throw new RuntimeException(String.format("Cannot find Class %s for declared bean %s",configuredBeanClassName, beanName));
+                    }
                 }
             }
         }
+
     }
-
-
 
     private Map<String, String> registerConfigDependencies(
             String beanName,
@@ -114,29 +161,29 @@ public class MultipleBeanDefinitionPostProcessor implements BeanDefinitionRegist
             if (annotation != null) {
                 String originalPrefix = annotation.value();
                 String key = getFirstKey(originalPrefix);
-                Map<String, Object> defaultConfig = extractDataFromMap(key, applicationProperties);
+                Map<String, Object> defaultConfig = extractDataFromMap(null,key, applicationProperties);
                 if(beanConfig.containsKey(key)){
 
-                    Map<String, Object> beanAppConfig = extractDataFromMap(key, beanConfig);
+                    Map<String, Object> beanAppConfig = extractDataFromMap(null,key, beanConfig);
                     mergeMissingKeys(defaultConfig, beanAppConfig);
                     beanConfig.put(key, beanAppConfig);
 
-                    Map<String, Object> propertySourceMap  = flatten(Map.of(beanName, beanConfig),"multiple");
-                    MapPropertySource propertySource = new MapPropertySource("custom", propertySourceMap);
+                    Map<String, Object> propertySourceMap  = flatten(Map.of(beanName, beanConfig),PARENT_CONFIG_NAME);
+                    MapPropertySource propertySource = new MapPropertySource(CUSTOM_CONFIG_PROPERTY_SOURCE, propertySourceMap);
                     environment.getPropertySources().addFirst(propertySource);
 
                     String customPrefix = PARENT_CONFIG_NAME+"."+beanName+"."+originalPrefix;
                     Object customConfigInstance = Binder.get(environment)
                             .bind(customPrefix, Bindable.of(configClass))
-                            .orElseThrow(() -> new RuntimeException("Unable to bind properties for custom config"));
+                            .orElseThrow(() -> new RuntimeException(String.format("Unable to bind properties for %s config", CUSTOM_CONFIG_PROPERTY_SOURCE)));
 
                     String formattedBeanName = kebabToCamelCase(beanName);
 
                     String customBeanName = formattedBeanName + configClass.getSimpleName();
                     registerBeanDefinition(registry, configClass, customBeanName, Map.of());
 
-                    MultipleBeanConfigRegistry.registerConfig(customBeanName, customConfigInstance);
-                    MultipleBeanConfigRegistry.registerBeanConfigReference(formattedBeanName+field.getName(), customBeanName);
+                    MultiBeanConfigRegistry.registerConfig(customBeanName, customConfigInstance);
+                    MultiBeanConfigRegistry.registerBeanConfigReference(formattedBeanName+field.getName(), customBeanName);
                     customConfigBeans.put(configClass.getSimpleName(), customBeanName);
                 }
             }
@@ -154,7 +201,7 @@ public class MultipleBeanDefinitionPostProcessor implements BeanDefinitionRegist
                 String propertyKey = formatConfigProperties(field.getAnnotation(Value.class).value());
                 String multipleBeanPropertyKey = PARENT_CONFIG_NAME+"."+beanName+"."+propertyKey;
                 if(flattenedProperties.containsKey(multipleBeanPropertyKey)){
-                    MultipleBeanConfigRegistry.registerValue(
+                    MultiBeanConfigRegistry.registerValue(
                             formattedBeanName+field.getName(),
                             flattenedProperties.get(multipleBeanPropertyKey)
                     );
@@ -162,8 +209,6 @@ public class MultipleBeanDefinitionPostProcessor implements BeanDefinitionRegist
             }
         }
     }
-
-
 
     private void registerBeanDefinition(BeanDefinitionRegistry registry,
                                         Class<?> multipleBeanClass,
@@ -207,7 +252,6 @@ public class MultipleBeanDefinitionPostProcessor implements BeanDefinitionRegist
         registry.registerBeanDefinition(kebabToCamelCase(beanName), builder.getBeanDefinition());
     }
 
-
     private void parseProperties(){
         MutablePropertySources propertySources = environment.getPropertySources();
         for (PropertySource<?> propertySource : propertySources) {
@@ -220,10 +264,6 @@ public class MultipleBeanDefinitionPostProcessor implements BeanDefinitionRegist
             }
         }
         applicationProperties = generateNestedMap(flattenedProperties);
-
-        System.out.println(flattenedProperties);
-        System.out.println(applicationProperties);
     }
-
 }
 

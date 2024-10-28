@@ -97,10 +97,14 @@ public final class Utils {
     }
 
 
-    protected static <T> T extractDataFromMap(final String key,
-                                     final Map<String, ?> data) {
+    protected static <T> T extractDataFromMap(String errorMessage,
+                                              final String key,
+                                              final Map<String, ?> data) {
         if (!data.containsKey(key)) {
-            throw new RuntimeException(String.format("Could not load data. Expecting key : %s", key));
+            if(errorMessage == null){
+                errorMessage = String.format("Could not load data. Expecting key : %s", key);
+            }
+            throw new RuntimeException(errorMessage);
         }
         return (T) data.get(key);
     }

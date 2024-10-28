@@ -3,7 +3,7 @@ package io.github.olufemithompson.multibeanconfig;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class MultipleBeanConfigRegistry {
+final class MultiBeanConfigRegistry {
     private static Map<String, Object> configRegistry = new HashMap<>();
     private static Map<String, Object> valueRegistry = new HashMap<>();
     private static Map<String, String> beanConfigReferenceRegistry = new HashMap<>();

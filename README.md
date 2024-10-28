@@ -34,7 +34,7 @@ config:
     - 'read'
     - 'write'
 
-multiple:
+multibean:
   default-client:
     class: HttpClientService
     config:
@@ -58,14 +58,14 @@ multiple:
 - **Mandatory Class Property**:  Each bean definition must include a class property specifying the actual class for which multiple bean instances should be configured.
 
 
-### Step 2: Use the @MultipleBean Annotation
-Annotate your service class with `@MultipleBean` to indicate that it should be configured using the MultiBeanConfig library. Here’s an example of how to use the `@MultipleBean` annotation with the `HttpClientService` defined in the previous `application.yml`.
+### Step 2: Use the @MultiBean Annotation
+Annotate your service class with `@MultiBean` to indicate that it should be configured using the MultiBeanConfig library. Here’s an example of how to use the `@MultiBean` annotation with the `HttpClientService` defined in the previous `application.yml`.
 
 #### A: Inject Configuration via Constructor
 In this approach, the `HttpClientService` class receives its configuration through the constructor.
 
 ```java
-@MultipleBean
+@MultiBean
 public class HttpClientService {
 
     private final HttpConfig config;
@@ -79,7 +79,7 @@ public class HttpClientService {
 #### B: Inject Configuration via Autowiring
 Alternatively, you can use Spring's `@Autowired` annotation to inject the configuration directly into the class.
 ```java
-@MultipleBean
+@MultiBean
 public class HttpClientService {
 
     @Autowired
@@ -105,7 +105,7 @@ public class HttpConfig {
 #### C: Inject Configuration Properties with @Value
 You can also inject specific configuration properties directly into your class fields using the `@Value` annotation.
 ```java
-@MultipleBean
+@MultiBean
 public class HttpClientService {
 
     @Value("${config.client-id}")
@@ -150,7 +150,7 @@ public class YourService {
 }
 ```
 ## Summary
-In summary, we’ve demonstrated how to leverage the `@MultipleBean` annotation from MultiBeanConfig to create and manage multiple, individually configured instances of the same class within your Spring application. 
+In summary, we’ve demonstrated how to leverage the `@MultiBean` annotation from MultiBeanConfig to create and manage multiple, individually configured instances of the same class within your Spring application. 
 The library provides several ways to inject configuration values into these beans:
 
 - **Constructor Injection**: This method ensures that the configuration is provided when the bean is created.
