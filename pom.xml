@@ -55,11 +55,4 @@
         </dependency>
 
     </dependencies>
-    <distributionManagement>
-        <repository>
-            <id>maven-central</id>
-            <url>https://repo.maven.apache.org/maven2</url>
-        </repository>
-    </distributionManagement>
-
 </project>
