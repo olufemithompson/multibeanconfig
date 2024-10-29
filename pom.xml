@@ -15,6 +15,35 @@
         <spring.boot.version>3.2.5</spring.boot.version>
     </properties>
 
+    <url>https://github.com/olufemithompson/multibeanconfig</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License</name>
+            <url>https://raw.githubusercontent.com/olufemithompson/multibeanconfig/refs/heads/main/LICENSE</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>olufemi</id>
+            <name>Olufemi Thompson</name>
+            <email>thompson.olufemi@gmail.com</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>+3</timezone>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/olufemithompson/multibeanconfig.git</connection>
+        <developerConnection>scm:git:git://github.com/olufemithompson/multibeanconfig.git</developerConnection>
+        <url>https://github.com/olufemithompson/multibeanconfig</url>
+        <tag>HEAD</tag>
+    </scm>
+
     <dependencies>
 
         <dependency>
