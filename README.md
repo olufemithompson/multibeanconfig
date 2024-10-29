@@ -17,7 +17,7 @@ Add the following dependency to your pom.xml:
 <dependency>
     <groupId>io.github.olufemithompson</groupId>
     <artifactId>multibeanconfig</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
 </dependency>
 ```
 
